@@ -8,7 +8,7 @@
     "tsConfigPath": "apps/nestar-api/tsconfig.app.json"
   },
   "monorepo": true,
-  "root": "apps",
+  "root": "apps/nestar-api",
   "projects": {
     "nestar": {
       "type": "application",
