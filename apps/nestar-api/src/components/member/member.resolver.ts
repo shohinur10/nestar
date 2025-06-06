@@ -1,25 +1,39 @@
 import { Mutation, Resolver, Query, Args } from '@nestjs/graphql';
 import { MemberService } from './member.service';
-import { UsePipes, ValidationPipe } from '@nestjs/common';
+import { InternalServerErrorException, UsePipes, ValidationPipe } from '@nestjs/common';
 import { MemberInput } from '../../libs/dto/member.input';
+import { Member } from '../../libs/dto/member';
 
 @Resolver()
 export class MemberResolver {
     constructor(private readonly memberService: MemberService) {}// inject the service
 
-    @Mutation(() => String)
+    @Mutation(() => Member)
     @UsePipes(ValidationPipe) // Use validation pipe for input validation
-    public async signup(@Args("input") input: MemberInput): Promise<string> {
+    public async signup(@Args("input") input: MemberInput): Promise<Member> {
+        try{
         console.log('Member signup called');
         console.log('Input:', input);
         // Implement the signup logic here
-        return  this .memberService.signup();
+        return  this.memberService.signup(input);
+        } catch (err) {
+            console.error('Error during signup:', err);
+            throw new InternalServerErrorException(err); // Rethrow the error to be handled by the global exception filter
+        }
     }
-    @Mutation(() => String)
-    public async login(@Args("input") input: MemberInput): Promise<string> {
+    @Mutation(() => Member)
+    public async login(@Args("input") input: MemberInput): Promise<Member> {
         console.log('Member login called');
         // Implement the login logic here
-        return this.memberService.login();
+        return this.memberService.login(input);
+        try{
+            console.log('Member login called');
+            // Implement the login logic here
+            return this.memberService.login(input);
+            } catch (err) {
+                console.error('Error during signup:', err);
+                throw new InternalServerErrorException(err); // Rethrow the error to be handled by the global exception filter
+         }
     }
     @Mutation(() => String)
     public async updateMember(): Promise<string> {
