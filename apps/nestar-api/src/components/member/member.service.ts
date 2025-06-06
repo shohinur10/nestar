@@ -1,8 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Member } from '../../libs/dto/member';
-import { MemberInput } from '../../libs/dto/member.input';
+import { LoginInput, MemberInput } from '../../libs/dto/member.input';
+import MemberSchema from '../../schemas/Member.model';
+import { MemberStatus } from '../../libs/enums/member.enum';
+import { Message } from '../../libs/enums/common.enum';
 @Injectable()
 export class MemberService {
     constructor(@InjectModel('Member') private readonly memberModel: Model <Member>) {}
@@ -19,16 +22,21 @@ export class MemberService {
 
     }
     }
-    public async login(input:MemberInput): Promise<Member> {
-        const result = await this.memberModel.findOne({
+    public async login(input:LoginInput): Promise<Member> {
+        const{ memberNick, memberPassword } = input;
+        const response = await this.memberModel.findOne({
             memberNick: input.memberNick,
-            memberPassword: input.memberPassword,
-        });
-        if (!result) {
-            throw new BadRequestException('Invalid credentials');
+        }).select('+memberPassword').exec();// Ensure password is included in the result
+        if (!response || response.memberStatus === MemberStatus.DELETED) {
+            throw new InternalServerErrorException(Message.NO_MEMBER_NICK);
+        }else if (response.memberStatus === MemberStatus.BLOCK) {
+            throw new InternalServerErrorException(Message.MEMBER_BLOCKED);
         }
-
-        return result;
+        //TODO:  compare  password verification logic here
+        const isMatch =memberPassword === response.memberPassword; // Replace with actual password comparison logic
+        if (!isMatch) 
+            throw new InternalServerErrorException(Message.WRONG_PASSWORD);
+        return response;
     }
     public async updateMember(): Promise<string> {
         return 'Member updated successfully';
