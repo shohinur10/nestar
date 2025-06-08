@@ -10,24 +10,26 @@ export class MemberResolver {
 
     @Mutation(() => Member) // Use validation pipe for input validation
     public async signup(@Args("input") input: MemberInput): Promise<Member> {
-        console.log('Mutation: Member signup called');
+        console.log('Mutation: signup');
+       
          // Implement the signup logic here
         return  this.memberService.signup(input);
     }
     @Mutation(() => Member)
     public async login(@Args("input") input: LoginInput): Promise<Member> {
-        console.log('Mutation: Member login called');
+        console.log('Mutation: login');
+     
         return this.memberService.login(input);
     }
     @Mutation(() => String)
     public async updateMember(): Promise<string> {
-        console.log(' Mutation: Member update called');
+        console.log(' Mutation: update ');
         // Implement the update logic here
         return this.memberService.updateMember();
     }
     @Query(() => String)
     public async getMember(): Promise<string> {
-        console.log('Query : Member get called');
+        console.log('Query :  getMember ');
         // Implement the get logic here
         return this.memberService.getMember();
     }
