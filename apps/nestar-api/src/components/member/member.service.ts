@@ -17,8 +17,8 @@ export class MemberService {
    //TODO: Authentication logic here
         return result;
     } catch (err){
-        console.error('Error during signup:', err);
-        throw new BadRequestException(err); // Handle the error appropriately
+        console.error('Error, Service.model:', err.message);
+        throw new BadRequestException(Message.USED_MEMBER_NICK_OR_PHONE); // Handle the error appropriately
 
     }
     }

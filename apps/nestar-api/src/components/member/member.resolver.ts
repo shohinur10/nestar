@@ -10,29 +10,14 @@ export class MemberResolver {
 
     @Mutation(() => Member) // Use validation pipe for input validation
     public async signup(@Args("input") input: MemberInput): Promise<Member> {
-        try{
-        console.log('Member signup called');
-        console.log('Input:', input);
-        // Implement the signup logic here
+        console.log('Mutation: Member signup called');
+         // Implement the signup logic here
         return  this.memberService.signup(input);
-        } catch (err) {
-            console.error('Error during signup:', err);
-            throw new InternalServerErrorException(err); // Rethrow the error to be handled by the global exception filter
-        }
     }
     @Mutation(() => Member)
     public async login(@Args("input") input: LoginInput): Promise<Member> {
-        console.log('Member login called');
-        // Implement the login logic here
+        console.log('Mutation: Member login called');
         return this.memberService.login(input);
-        try{
-            console.log('Member login called');
-            // Implement the login logic here
-            return this.memberService.login(input);
-            } catch (err) {
-                console.error('Error during signup:', err);
-                throw new InternalServerErrorException(err); // Rethrow the error to be handled by the global exception filter
-         }
     }
     @Mutation(() => String)
     public async updateMember(): Promise<string> {
