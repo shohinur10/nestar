@@ -6,12 +6,17 @@ import { LoginInput, MemberInput } from '../../libs/dto/member.input';
 import MemberSchema from '../../schemas/Member.model';
 import { MemberStatus } from '../../libs/enums/member.enum';
 import { Message } from '../../libs/enums/common.enum';
+import { AuthService } from '../auth/auth.service';
 @Injectable()
 export class MemberService {
-    constructor(@InjectModel('Member') private readonly memberModel: Model <Member>) {}
+    constructor(@InjectModel('Member') private readonly memberModel: Model <Member>,
+    private authService:AuthService
+) {}
 
     public async signup(input:MemberInput): Promise<Member> {
    //TODO:HASH PASSWORD
+   input.memberPassword = await this.authService.hashPassword(input.memberPassword);
+
    try{
    const result  =await this.memberModel.create(input);
    //TODO: Authentication logic here
@@ -24,16 +29,27 @@ export class MemberService {
     }
     public async login(input:LoginInput): Promise<Member> {
         const{ memberNick, memberPassword } = input;
-        const response = await this.memberModel.findOne({
+        const response = await this.memberModel
+        .findOne({
             memberNick: input.memberNick,
-        }).select('+memberPassword').exec();// Ensure password is included in the result
+        }).select('+memberPassword')
+        .exec(); // Ensure password is included in the result
+
+        if (!response) {
+            throw new InternalServerErrorException(Message.NO_MEMBER_NICK);
+        }
+        
         if (!response || response.memberStatus === MemberStatus.DELETED) {
             throw new InternalServerErrorException(Message.NO_MEMBER_NICK);
         }else if (response.memberStatus === MemberStatus.BLOCK) {
             throw new InternalServerErrorException(Message.MEMBER_BLOCKED);
         }
         //TODO:  compare  password verification logic here
-        const isMatch =memberPassword === response.memberPassword; // Replace with actual password comparison logic
+
+        if (!response.memberPassword) {
+            throw new InternalServerErrorException(Message.WRONG_PASSWORD);
+        }
+        const isMatch = await this.authService.comparePassword(input.memberPassword, response.memberPassword); // Replace with actual password comparison logic
         if (!isMatch) 
             throw new InternalServerErrorException(Message.WRONG_PASSWORD);
         return response;

@@ -6,7 +6,7 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(NestarBatchModule);
   app.useGlobalPipes(new ValidationPipe());
-  app.useGlobalInterceptors(new LoggingInterceptor());
+  app.useGlobalInterceptors(new LoggingInterceptor());// Middleware integration
   await app.listen(process.env.PORT_BATCH ?? 3000);
 }
 bootstrap();
