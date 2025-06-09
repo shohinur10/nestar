@@ -7,8 +7,6 @@ async function bootstrap() {
   const app = await NestFactory.create(NestarBatchModule);
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalInterceptors(new LoggingInterceptor());
-
-  console.log(` App running on port ${process.env.PORT_BATCH ?? 3000}`);
   await app.listen(process.env.PORT_BATCH ?? 3000);
 }
 bootstrap();
