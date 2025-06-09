@@ -58,7 +58,7 @@ export class Member {
     @Field(() => Int)
     memberViews: string;
 
-    @Field(() => Int, { nullable: true })
+    @Field(() => Int, { nullable: true }) 
     memberComments: number;
 
     @Field(() => Int)
@@ -79,6 +79,9 @@ export class Member {
 
     @Field(() => Date, { nullable: true })
     updatedAt: Date;
+
+    @Field(() =>String, { nullable: true })
+    accessToken?: string;
 }
 
 

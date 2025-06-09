@@ -11,7 +11,6 @@ export class MemberResolver {
     @Mutation(() => Member) // Use validation pipe for input validation
     public async signup(@Args("input") input: MemberInput): Promise<Member> {
         console.log('Mutation: signup');
-       
          // Implement the signup logic here
         return  this.memberService.signup(input);
     }
