@@ -5,6 +5,9 @@ import { LoginInput, MemberInput } from '../../libs/dto/member.input';
 import { Member } from '../../libs/dto/member';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { MemberType } from '../../libs/enums/member.enum';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Resolver()
 export class MemberResolver {
@@ -33,13 +36,24 @@ export class MemberResolver {
         return this.memberService.updateMember();
     }
     @UseGuards(AuthGuard)
-    @Mutation(() => String)
+    @Query(() => String)
     public async checkAuth(@AuthMember('memberNick') memberNick: string ): Promise<string> {
-        console.log(' Mutation: update ');
+        console.log(' checkAuth: update ');
         console.log( 'memberNick:', memberNick);
         // Implement the update logic here
         return `Hi${memberNick}`;
     }
+
+    @Roles(MemberType.USER, MemberType.AGENT) // Allow USER, ADMIN, AGENT roles
+    @UseGuards(RolesGuard)
+    @Query(() => String)
+    public async checkAuthRoles(@AuthMember() authMember: Member ): Promise<string> {
+        console.log(' checkAuth: update ');
+        console.log( 'authMember:', authMember.memberNick);
+        // Implement the update logic here
+        return `Hi${authMember.memberNick}, you are ${authMember.memberType} (memberId: ${authMember._id})`;
+    }
+
 
     @Query(() => String)
     public async getMember(): Promise<string> {
@@ -48,6 +62,15 @@ export class MemberResolver {
         return this.memberService.getMember();
     }
     //Authorization :Admin 
+    @Roles(MemberType.ADMIN)
+    @UseGuards(RolesGuard)
+    @Mutation(() => String)
+    public async getAllMembersByAdmin(@AuthMember() authMember:Member): Promise<string> {
+        console.log('Mutation: getAllMembers:',authMember.memberType)
+        // Implement the logic to get all members here
+        return this.memberService.getAllMembersByAdmin();
+    }
+
     @Mutation(() => String)
     public async updateMemberByAdmin(): Promise<string> {
         console.log('Mutation: updateMemberByAdmin');

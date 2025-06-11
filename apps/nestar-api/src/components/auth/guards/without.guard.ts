@@ -27,6 +27,6 @@ export class WithoutGuard implements CanActivate {
 		}
 
 		// description => http, rpc, gprs and etc are ignored
-		return false ; // Default return statement to handle all code paths
+		return false; // Default return statement to handle all code paths
 	}
 }

@@ -37,3 +37,9 @@ export class RolesGuard implements CanActivate {
 		return false; // Default return statement for other contexts
 	}
 }
+// roles guard
+// This guard checks if the user has the required roles to access a route
+// It uses the Reflector to get the roles metadata from the route handler
+// If the user does not have the required roles, it throws a ForbiddenException
+// If the user has the required roles, it allows access to the route
+// If the context is not GraphQL, it returns false to ignore the request

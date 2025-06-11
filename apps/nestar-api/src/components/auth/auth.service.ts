@@ -28,7 +28,7 @@ public async comparePassword(password: string, hashedPassword: string): Promise<
   
     return  await this.jwtService.signAsync(payload);
  }
- public async verifyToken(token: string): Promise<Member> {
+ public async verifyToken(token: string): Promise<Member> { // verify token and  return member because we are taking by creating member token 
     const member = await this.jwtService.verifyAsync(token);
     member._id = shapeIntoMongoObjectId(member._id);
     return member; 

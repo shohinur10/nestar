@@ -67,5 +67,8 @@ export class MemberService {
     public async updateMemberByAdmin(): Promise<string> {
         return 'Member updated by admin successfully';
     }
+    public async getAllMembersByAdmin(): Promise<string> {
+        return 'All members retrieved successfully';
+    }
 }
 
