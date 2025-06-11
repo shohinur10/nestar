@@ -20,6 +20,7 @@ export class MemberResolver {
      
         return this.memberService.login(input);
     }
+    // Authenticated : (user ,admin ,agent )
     @Mutation(() => String)
     public async updateMember(): Promise<string> {
         console.log(' Mutation: update ');
@@ -31,5 +32,12 @@ export class MemberResolver {
         console.log('Query :  getMember ');
         // Implement the get logic here
         return this.memberService.getMember();
+    }
+    //Authorization :Admin 
+    @Mutation(() => String)
+    public async updateMemberByAdmin(): Promise<string> {
+        console.log('Mutation: updateMemberByAdmin');
+        // Implement the admin update logic here
+        return this.memberService.updateMemberByAdmin();
     }
 }
