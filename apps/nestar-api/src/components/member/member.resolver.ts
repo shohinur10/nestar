@@ -10,6 +10,7 @@ import { MemberType } from '../../libs/enums/member.enum';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { MemberUpdate } from '../../libs/dto/member.update';
 import { ObjectId } from 'mongoose';
+import { shapeIntoMongoObjectId } from '../../libs/config';
 
 @Resolver()
 export class MemberResolver {
@@ -61,11 +62,12 @@ export class MemberResolver {
     }
 
 
-    @Query(() => String)
-    public async getMember(): Promise<string> {
+    @Query(() => Member)
+    public async getMember(@Args('memberId') input: string): Promise<Member> {
         console.log('Query :  getMember ');
+        const targetId = shapeIntoMongoObjectId(input);
         // Implement the get logic here
-        return this.memberService.getMember();
+        return this.memberService.getMember(targetId);
     }
     //Authorization :Admin 
     @Roles(MemberType.ADMIN)
