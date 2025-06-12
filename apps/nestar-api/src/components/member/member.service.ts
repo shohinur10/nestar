@@ -9,10 +9,15 @@ import { Message } from '../../libs/enums/common.enum';
 import { AuthService } from '../auth/auth.service';
 import { MemberUpdate } from '../../libs/dto/member.update';
 import { T } from '../../libs/types/common';
+import { ViewService } from '../view/view.service';
+import { ViewInput } from '../../libs/dto/view/view.input';
+import { ViewGroup } from '../../libs/enums/view.enum';
+import { exec } from 'child_process';
 @Injectable()
 export class MemberService {
     constructor(@InjectModel('Member') private readonly memberModel: Model <Member>,
-    private authService:AuthService
+    private authService:AuthService,
+    private viewService: ViewService // Inject ViewService if needed for member-related views
 ) {}
 
     public async signup(input:MemberInput): Promise<Member> {
@@ -76,20 +81,46 @@ export class MemberService {
         result.accessToken = await this.authService.createToken(result);
         return result;
     }
-    public async getMember(targetId: ObjectId): Promise<Member> {
+    public async getMember(memberId: ObjectId, targetId: ObjectId): Promise<Member> {
         const search: T = {
-            _id: targetId,
-            memberStatus: {
-                $ne:(MemberStatus.ACTIVE, MemberStatus.BLOCK),
-            }
+          _id: targetId,
+          memberStatus: {
+            $ne: MemberStatus.DELETED,
+          },
         };
-        const targetMember = await this.memberModel.findOne(search).exec();
+      
+        // 1. Find the target member
+        const targetMember = await this.memberModel.findOne(search).lean().exec();
+      
         if (!targetMember) {
-            throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+          throw new InternalServerErrorException(Message.NO_DATA_FOUND);
         }
-
+      
+        // 2. If requester is logged in (has a memberId), track the view
+        if (memberId) {
+          const viewInput: ViewInput = {
+            memberId,
+            viewRefId: targetId,
+            viewGroup: ViewGroup.MEMBER,
+          };
+      
+          // Record the view and get whether it's a new one
+          const isNewView = await this.viewService.recordView(viewInput);
+      
+          // If it's a new view, increment the member's view count
+          if (isNewView) {
+            await this.memberModel.findByIdAndUpdate(
+              targetId,
+              { $inc: { memberViews: 1 } },
+              { new: true }
+            ).exec();
+          }
+        }
+      
+        // 3. Return the member data
         return targetMember;
-    }
+      }
+      
 
     public async updateMemberByAdmin(): Promise<string> {
         return 'Member updated by admin successfully';

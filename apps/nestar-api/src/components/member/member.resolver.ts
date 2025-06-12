@@ -11,6 +11,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { MemberUpdate } from '../../libs/dto/member.update';
 import { ObjectId } from 'mongoose';
 import { shapeIntoMongoObjectId } from '../../libs/config';
+import { WithoutGuard } from '../auth/guards/without.guard';
 
 @Resolver()
 export class MemberResolver {
@@ -61,13 +62,14 @@ export class MemberResolver {
         return `Hi${authMember.memberNick}, you are ${authMember.memberType} (memberId: ${authMember._id})`;
     }
 
-
+     @UseGuards(WithoutGuard)
     @Query(() => Member)
-    public async getMember(@Args('memberId') input: string): Promise<Member> {
+    public async getMember(@Args('memberId') input: string,@AuthMember('_id') memberId:ObjectId): Promise<Member> {
         console.log('Query :  getMember ');
+        console.log('memberId:', memberId);
         const targetId = shapeIntoMongoObjectId(input);
         // Implement the get logic here
-        return this.memberService.getMember(targetId);
+        return this.memberService.getMember(targetId, memberId);
     }
     //Authorization :Admin 
     @Roles(MemberType.ADMIN)
