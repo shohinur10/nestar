@@ -1,7 +1,7 @@
 import { Mutation, Resolver, Query, Args } from '@nestjs/graphql';
 import { MemberService } from './member.service';
 import { BadRequestException, InternalServerErrorException, UseGuards, UsePipes,  } from '@nestjs/common';
-import { AgentsInquiry, LoginInput, MemberInput } from '../../libs/dto/member.input';
+import { AgentsInquiry, LoginInput, MemberInput, MembersInquiry } from '../../libs/dto/member.input';
 import { Member, Members } from '../../libs/dto/member';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
@@ -27,7 +27,7 @@ export class MemberResolver {
     public async login(@Args("input") input: LoginInput): Promise<Member> {
         console.log('Mutation: login');
      
-        return this.memberService.login(input);
+        return  await this.memberService.login(input);
     }
     // Authenticated : (user ,admin ,agent )
     @UseGuards(AuthGuard)
@@ -38,10 +38,10 @@ export class MemberResolver {
          Promise<Member> {
         console.log(' Mutation: update ');
 
-       delete input._id  // Remove _id from input if not needed
+       delete (input as Partial<MemberUpdate>)._id;  // Remove _id from input if not needed
         
         // Implement the update logic here
-        return this.memberService.updateMember(memberId, input);
+        return  await this.memberService.updateMember(memberId, input);
     }
     @UseGuards(AuthGuard)
     @Query(() => String)
@@ -69,7 +69,7 @@ export class MemberResolver {
         console.log('memberId:', memberId);
         const targetId = shapeIntoMongoObjectId(input);
         // Implement the get logic here
-        return this.memberService.getMember(targetId, memberId);
+        return await this.memberService.getMember(targetId, memberId);
     }
 
     @Query(() => Members)
@@ -82,24 +82,30 @@ public async getAgents(@Args('input') input: AgentsInquiry, @AuthMember('_id') m
     throw error;
   }
 }
-
-
-
-
     //Authorization :Admin 
     @Roles(MemberType.ADMIN)
     @UseGuards(RolesGuard)
-    @Mutation(() => Member)
-    public async getAllMembersByAdmin(): Promise<string> {
-        
-        // Implement the logic to get all members here
-        return this.memberService.getAllMembersByAdmin();
+    @Query(() => Members)
+    public async getAllMembersByAdmin(@Args('input') input: MembersInquiry): Promise<Members> {
+        console.log('Query: getAllMembersByAdmin');
+        return await this.memberService.getAllMembersByAdmin(input);
     }
 
-    @Mutation(() => String)
-    public async updateMemberByAdmin(): Promise<string> {
-        console.log('Mutation: updateMemberByAdmin');
-        // Implement the admin update logic here
-        return this.memberService.updateMemberByAdmin();
-    }
+     @Roles(MemberType.ADMIN)
+    @UseGuards(RolesGuard)
+    @Mutation(() => Member)
+public async updateMemberByAdmin(@Args('input') input: MemberUpdate): Promise<Member> {
+  try {
+    console.log('Mutation: updateMemberByAdmin, input:', input);
+
+    const updateData = { ...input };
+    delete (updateData as Partial<MemberUpdate>)._id;
+
+    const memberId = shapeIntoMongoObjectId(input._id);
+    return await this.memberService.updateMember(memberId, updateData);
+  } catch (error) {
+    console.error('Update failed:', error);
+    throw new BadRequestException(error.message || 'Bad Request Exception');
+  }
+}
 }

@@ -1,8 +1,8 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, ObjectId } from 'mongoose';
+import { Model, ObjectId, Types } from 'mongoose';
 import { Member, Members } from '../../libs/dto/member';
-import { AgentsInquiry, LoginInput, MemberInput } from '../../libs/dto/member.input';
+import { AgentsInquiry, LoginInput, MemberInput, MembersInquiry } from '../../libs/dto/member.input';
 import MemberSchema from '../../schemas/Member.model';
 import { MemberStatus, MemberType } from '../../libs/enums/member.enum';
 import { Direction, Message } from '../../libs/enums/common.enum';
@@ -129,12 +129,11 @@ return result; // Return the Member object directly
             memberStatus: MemberStatus.ACTIVE,
         };
     
-        // Convert direction string to number for MongoDB
-        const directionNum = input.direction?.toUpperCase() === 'ASC' ? 1 : -1;
-        const sort: T = { [input.sort ?? "createdAt"]: directionNum };
+        const sortDirection = input.direction === Direction.ASC ? 1 : input.direction === Direction.DESC ? -1 : -1;
+        const sort: T = { [input.sort ?? "createdAt"]: sortDirection };
     
         if (text) {
-            match.memberNick = { $regex: new RegExp(text, 'i') }; // Case-insensitive search
+            match.memberNick = { $regex: new RegExp(text, 'i') };
         }
     
         console.log("match:", match);
@@ -153,19 +152,70 @@ return result; // Return the Member object directly
                 },
             },
         ]).exec();
+    
         if (!result.length) {
             throw new InternalServerErrorException("No data found");
         }
     
-        return result[0]; // Matches your Members return type
+        return result[0];
     }
     
     
-    public async updateMemberByAdmin(): Promise<string> {
-        return 'Member updated by admin successfully';
-    }
-    public async getAllMembersByAdmin(): Promise<string> {
-        return 'All members retrieved successfully';
-    }
+    
+    public async getAllMembersByAdmin(input:MembersInquiry): Promise<Members> {
+        const { text, memberStatus, memberType } = input.search;
+
+const match: T = {};
+const sortDirection = input.direction === Direction.DESC ? -1 : 1;
+const sort: T = { [input.sort ?? "createdAt"]: sortDirection };
+
+if (memberStatus) match.memberStatus = memberStatus;  // also fix this: should be 'memberStatus' not 'MemberStatus'
+if (memberType) match.memberType = memberType;
+
+if (text) {
+    match.memberNick = { $regex: new RegExp(text, 'i') };
 }
 
+console.log("match:", match);
+console.log("sort:", sort);
+
+const result = await this.memberModel.aggregate([
+    { $match: match },
+    { $sort: sort },
+    {
+        $facet: {
+            list: [
+                { $skip: (input.page - 1) * input.limit },
+                { $limit: input.limit }
+            ],
+            metaCounter: [{ $count: 'total' }],
+        },
+    },
+]).exec();
+
+if (!result.length) {
+    throw new InternalServerErrorException("No data found");
+}
+return result[0];
+    }
+    public async updateMemberByAdmin(input: MemberUpdate): Promise<Member> {
+        const { _id, ...updateData } = input;
+      
+        if (!_id || !Types.ObjectId.isValid(_id)) {
+          throw new BadRequestException('Invalid ID format');
+        }
+      
+        const result = await this.memberModel.findOneAndUpdate(
+          { _id },
+          updateData,
+          { new: true }
+        ).exec();
+      
+        if (!result) {
+          throw new NotFoundException(`No member found with ID: ${_id}`);
+        }
+      
+        return result;
+      }
+    }
+      
