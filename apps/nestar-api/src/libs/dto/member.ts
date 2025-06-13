@@ -1,6 +1,7 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql";
 import { ObjectId } from "mongoose";
 import { MemberAuthType, MemberStatus, MemberType } from "../enums/member.enum";
+ // Ensure this path is correct
 
 @ObjectType()
 export class Member {
@@ -53,10 +54,10 @@ export class Member {
     memberPoints: number;
 
     @Field(() => Int)
-    memberLikes: string;
+    memberLikes: number;
 
     @Field(() => Int)
-    memberViews: string;
+    memberViews: number;
 
     @Field(() => Int, { nullable: true }) 
     memberComments: number;
@@ -83,6 +84,22 @@ export class Member {
     @Field(() =>String, { nullable: true })
     accessToken?: string;
 }
+
+
+@ObjectType()
+export class TotalCounter {
+    @Field(() => Int, { nullable: true })
+    total: number;
+}
+ @ObjectType()
+ export class Members {
+    @Field(() => [Member])
+    list: Member[];
+
+    @Field(() => [TotalCounter], { nullable: true })
+    metaCounter: TotalCounter[];
+}
+
 
 
     

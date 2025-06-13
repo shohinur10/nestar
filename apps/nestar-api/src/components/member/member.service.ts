@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
-import { Member } from '../../libs/dto/member';
-import { LoginInput, MemberInput } from '../../libs/dto/member.input';
+import { Member, Members } from '../../libs/dto/member';
+import { AgentsInquiry, LoginInput, MemberInput } from '../../libs/dto/member.input';
 import MemberSchema from '../../schemas/Member.model';
-import { MemberStatus } from '../../libs/enums/member.enum';
-import { Message } from '../../libs/enums/common.enum';
+import { MemberStatus, MemberType } from '../../libs/enums/member.enum';
+import { Direction, Message } from '../../libs/enums/common.enum';
 import { AuthService } from '../auth/auth.service';
 import { MemberUpdate } from '../../libs/dto/member.update';
 import { T } from '../../libs/types/common';
@@ -28,7 +28,7 @@ export class MemberService {
    const result  = await this.memberModel.create(input);
    //TODO: Authentication logic here
     result.accessToken = await this.authService.createToken(result); // Assuming createToken is a method in AuthService that generates a token for the member
-   return result;
+return result; // Return the Member object directly
     } catch (err){
         console.error('Error, Service.model:', err.message);
         throw new BadRequestException(Message.USED_MEMBER_NICK_OR_PHONE); // Handle the error appropriately
@@ -79,7 +79,7 @@ export class MemberService {
     
         
         result.accessToken = await this.authService.createToken(result);
-        return result;
+        return result; // Return the Member object directly
     }
     public async getMember(memberId: ObjectId, targetId: ObjectId): Promise<Member> {
         const search: T = {
@@ -120,8 +120,47 @@ export class MemberService {
         // 3. Return the member data
         return targetMember;
       }
-      
 
+      public async getAgents(memberId: ObjectId, input: AgentsInquiry): Promise<Members> {
+        const { text } = input.search;
+    
+        const match: T = {
+            memberType: MemberType.AGENT,
+            memberStatus: MemberStatus.ACTIVE,
+        };
+    
+        // Convert direction string to number for MongoDB
+        const directionNum = input.direction?.toUpperCase() === 'ASC' ? 1 : -1;
+        const sort: T = { [input.sort ?? "createdAt"]: directionNum };
+    
+        if (text) {
+            match.memberNick = { $regex: new RegExp(text, 'i') }; // Case-insensitive search
+        }
+    
+        console.log("match:", match);
+        console.log("sort:", sort);
+    
+        const result = await this.memberModel.aggregate([
+            { $match: match },
+            { $sort: sort },
+            {
+                $facet: {
+                    list: [
+                        { $skip: (input.page - 1) * input.limit },
+                        { $limit: input.limit }
+                    ],
+                    metaCounter: [{ $count: 'total' }],
+                },
+            },
+        ]).exec();
+        if (!result.length) {
+            throw new InternalServerErrorException("No data found");
+        }
+    
+        return result[0]; // Matches your Members return type
+    }
+    
+    
     public async updateMemberByAdmin(): Promise<string> {
         return 'Member updated by admin successfully';
     }

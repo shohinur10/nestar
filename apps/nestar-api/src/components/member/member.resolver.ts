@@ -1,8 +1,8 @@
 import { Mutation, Resolver, Query, Args } from '@nestjs/graphql';
 import { MemberService } from './member.service';
-import { InternalServerErrorException, UseGuards, UsePipes,  } from '@nestjs/common';
-import { LoginInput, MemberInput } from '../../libs/dto/member.input';
-import { Member } from '../../libs/dto/member';
+import { BadRequestException, InternalServerErrorException, UseGuards, UsePipes,  } from '@nestjs/common';
+import { AgentsInquiry, LoginInput, MemberInput } from '../../libs/dto/member.input';
+import { Member, Members } from '../../libs/dto/member';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { AuthMember } from '../auth/decorators/authMember.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -71,12 +71,27 @@ export class MemberResolver {
         // Implement the get logic here
         return this.memberService.getMember(targetId, memberId);
     }
+
+    @Query(() => Members)
+public async getAgents(@Args('input') input: AgentsInquiry, @AuthMember('_id') memberId: ObjectId): Promise<Members> {
+  try {
+    console.log('Input for getAgents:', input);
+    return await this.memberService.getAgents(memberId, input);
+  } catch (error) {
+    console.error('Error in getAgents resolver:', error);
+    throw error;
+  }
+}
+
+
+
+
     //Authorization :Admin 
     @Roles(MemberType.ADMIN)
     @UseGuards(RolesGuard)
-    @Mutation(() => String)
-    public async getAllMembersByAdmin(@AuthMember() authMember:Member): Promise<string> {
-        console.log('Mutation: getAllMembers:',authMember.memberType)
+    @Mutation(() => Member)
+    public async getAllMembersByAdmin(): Promise<string> {
+        
         // Implement the logic to get all members here
         return this.memberService.getAllMembersByAdmin();
     }

@@ -1,6 +1,7 @@
-import { Field, InputType } from "@nestjs/graphql";
+import { Field, InputType, Int } from "@nestjs/graphql";
 import { MemberType, MemberAuthType } from '../enums/member.enum';
-import { IsNotEmpty, IsOptional,Length} from 'class-validator';
+import { IsIn, IsNotEmpty, IsOptional,Length, Min} from 'class-validator';
+import { availableAgentSorts } from "../config";
 
 
 @InputType()
@@ -41,3 +42,34 @@ export class LoginInput {
     memberPassword: string;
 }
    
+@InputType()
+@InputType()
+export class AISearch {
+    @IsNotEmpty()
+    @Field(() => String, { nullable: true })
+    text?: string;
+}
+@InputType()
+export class AgentsInquiry {
+    @IsNotEmpty()
+    @Field(() => Int)    // <-- use Int for number, not String
+    page: number;
+
+    @IsNotEmpty()
+    @Min(1)
+    @Field(() => Int)
+    limit: number;
+
+    @IsOptional()
+    @IsIn(availableAgentSorts)
+    @Field(() => String, { nullable: true })
+    sort?: string;
+
+    @IsOptional()
+    @Field(() => String, { nullable: true })
+    direction?: string;
+
+    @IsNotEmpty()
+    @Field(() => AISearch)
+    search: AISearch;
+}
