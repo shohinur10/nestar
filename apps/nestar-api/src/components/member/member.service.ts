@@ -163,7 +163,7 @@ return result; // Return the Member object directly
     
     
     public async getAllMembersByAdmin(input:MembersInquiry): Promise<Members> {
-        const { text, memberStatus, memberType } = input.search;
+        const { text, memberStatus, memberType } = input.search; // distructure search properties
 
 const match: T = {};
 const sortDirection = input.direction === Direction.DESC ? -1 : 1;
@@ -173,8 +173,8 @@ if (memberStatus) match.memberStatus = memberStatus;  // also fix this: should b
 if (memberType) match.memberType = memberType;
 
 if (text) {
-    match.memberNick = { $regex: new RegExp(text, 'i') };
-}
+    match.memberNick = { $regex: new RegExp(text, 'i') };//i flag – katta-kichik harflarga e’tibor bermaslik.
+} // $regex => MongoDB'da bu matnga mos keluvchi qiymatlarni topadi => { memberNick: { $regex: /ali/i } }
 
 console.log("match:", match);
 console.log("sort:", sort);
@@ -183,12 +183,12 @@ const result = await this.memberModel.aggregate([
     { $match: match },
     { $sort: sort },
     {
-        $facet: {
+        $facet: {//$facet – MongoDB’da parallel (bir vaqtda) ikki xil natijani olishga imkon beradi.
             list: [
-                { $skip: (input.page - 1) * input.limit },
-                { $limit: input.limit }
+                { $skip: (input.page - 1) * input.limit },//list: sahifalash uchun (masalan, 2-sahifa uchun 10 ta ma’lumot)
+                { $limit: input.limit }//metaCounter: umumiy nechta hujjat borligini sanaydi
             ],
-            metaCounter: [{ $count: 'total' }],
+            metaCounter: [{ $count: 'total' }], //etaCounter → mos keladigan jami foydalanuvchilar sonini hisoblaydi
         },
     },
 ]).exec();
@@ -196,7 +196,7 @@ const result = await this.memberModel.aggregate([
 if (!result.length) {
     throw new InternalServerErrorException("No data found");
 }
-return result[0];
+return result[0];// [0] – bu yerda 0 indeksi orqali faqatgina birinchi elementni olishimiz mumkin, chunki $facet operatori ikkita massiv qaytaradi: biri ro'yxat (list), ikkinchisi esa metaCounter.
     }
     public async updateMemberByAdmin(input: MemberUpdate): Promise<Member> {
         const { _id, ...updateData } = input;
