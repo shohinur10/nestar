@@ -141,7 +141,6 @@ if (!result) throw new Error(Message.UPLOAD_FAILED);
 
 return url;
 }
-
 @UseGuards(AuthGuard)
 @Mutation((returns) => [String])
 public async imagesUploader(
@@ -180,5 +179,6 @@ files: Promise<FileUpload>[],
 	await Promise.all(promisedList);
 	return uploadedImages;
 }
+
   
 }
