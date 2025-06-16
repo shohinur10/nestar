@@ -1,0 +1,81 @@
+import { Field, Int, ObjectType } from "@nestjs/graphql";
+import { PropertyLocation, PropertyStatus, PropertyType } from "../../enums/property.enum";
+import { ObjectId } from "mongoose";
+
+
+
+@ObjectType()
+export class Property{
+    @Field(type => String)
+    _id: ObjectId;
+
+    @Field(type => PropertyType)
+    propertyType: PropertyType;
+
+    @Field(type => PropertyStatus)
+    propertyStatus: PropertyStatus;
+
+    @Field(type => PropertyLocation)
+    propertyLocation: PropertyLocation;  
+    
+    @Field(type => String)
+    propertyAddress: string;
+
+    @Field(() => String)
+    propertyTitle: string;
+
+    @Field(() => Number)
+    propertyPrice: number;
+
+    @Field(() => String)
+    propertySquare: number;
+
+    @Field(() => Int)
+    propertyBeds: number;
+
+    @Field(() => Int)
+    propertyRooms: number;
+
+    @Field(() => Int)
+    propertyViews: number;
+
+    @Field(() => Int)
+    propertyLikes: number;
+
+    @Field(() => Int)
+    propertyComments: number;
+
+    @Field(() => Int)
+    propertyRank: number;
+
+    @Field(() => [String])
+    propertyImages: string[];
+    
+    @Field(() => String, { nullable: true })
+    propertyDesc?: string;
+
+    @Field(() => Boolean)
+    propertyBarter: boolean;
+
+    @Field(() => Boolean)
+    propertyRent: boolean;
+
+    @Field(() => String)
+    memberId:ObjectId;
+     
+    @Field(() => Date, { nullable: true })
+    soldAt?:Date;
+
+    @Field(() => Date, { nullable: true })
+    deletedAt?: Date;
+
+    @Field(() => Date, { nullable: true })
+    constructedAt?: Date; 
+
+
+    @Field(() => Date)
+    createdAt: Date;
+
+    @Field(() => Date)
+    updatedAt: Date;
+}

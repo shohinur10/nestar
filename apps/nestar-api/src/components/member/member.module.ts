@@ -15,6 +15,7 @@ import { ViewModule } from '../view/view.module';
     AuthModule,// Assuming you have a MemberSchema defined
     ViewModule // Importing ViewModule if needed for member-related views
   ],
-  providers: [MemberResolver, MemberService]
+  providers: [MemberResolver, MemberService],
+  exports: [MemberService],
 })
 export class MemberModule {}
