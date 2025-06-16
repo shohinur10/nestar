@@ -8,7 +8,10 @@ import { ViewModule } from '../view/view.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'Member', schema: MemberSchema }]),
+    MongooseModule.forFeature([
+      { name: 'Member', 
+        schema: MemberSchema 
+      }]),
     AuthModule,// Assuming you have a MemberSchema defined
     ViewModule // Importing ViewModule if needed for member-related views
   ],
