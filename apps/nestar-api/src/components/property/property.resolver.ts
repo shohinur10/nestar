@@ -15,7 +15,7 @@ public async createProperty(
  @Args('input') input:PropertyInput, 
 @AuthMember("_id") memberId:ObjectId,): Promise<Property> {
     console.log('Mutation: createProperty')
-      //input.memberId = memberId;
+     // input.memberId = memberId;
     // Implement the create property logic here
     return this.propertyService.createProperty(input);
 

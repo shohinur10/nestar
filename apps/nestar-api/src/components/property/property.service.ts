@@ -25,7 +25,7 @@ private memberService: MemberService,
           const result = await this.propertyModel.create(input);
           console.log('Property created:', result);
       
-          await this.memberService.memberStatsEditor({
+          await this.memberService.memberStatsEditor({ // try and catch because validation errors
             _id: result.memberId,
             targetKey: 'memberProperties',
             modifier: 1,
