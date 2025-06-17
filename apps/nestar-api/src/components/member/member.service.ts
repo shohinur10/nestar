@@ -81,7 +81,7 @@ return result; // Return the Member object directly
         result.accessToken = await this.authService.createToken(result);
         return result; // Return the Member object directly
     }
-    public async getMember(memberId: ObjectId, targetId: ObjectId): Promise<Member> {
+    public async getMember(memberId: ObjectId|null, targetId: ObjectId): Promise<Member> {
         const search: T = {
           _id: targetId,
           memberStatus: {

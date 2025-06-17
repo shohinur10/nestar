@@ -3,8 +3,6 @@ import { PropertyLocation, PropertyStatus, PropertyType } from "../../enums/prop
 import { ObjectId } from "mongoose";
 import { Member } from "../member";
 
-
-
 @ObjectType()
 export class Property{
     @Field(type => String)
@@ -79,5 +77,10 @@ export class Property{
 
     @Field(() => Date)
     updatedAt: Date;
+
+    /** from aggregation */
+
+    @Field(() => Member, { nullable: true })
+    memberData?: Member;
 
 }
