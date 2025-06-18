@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { isNullableType, NonNullTypeNode } from 'graphql';
 import { Model, ObjectId, Schema, Types } from 'mongoose';
 import { Properties, Property } from '../../libs/dto/property/property';
-import { PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
+import { AgentPropertiesInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { MemberService } from '../member/member.service';
 import { PropertyStatus } from '../../libs/enums/property.enum';
@@ -172,5 +172,42 @@ private readonly viewService: ViewService,
 			});
 		}
 	}
+
+  public async getAgentProperties(memberId: ObjectId, input: AgentPropertiesInquiry): Promise<Properties> {
+    const { propertyStatus } = input.search;
+    if (propertyStatus === PropertyStatus.DELETE) throw new BadRequestException(Message.NOT_ALLOWED_REQUEST);
+  
+    const match: T = {
+      memberId: memberId,
+      propertyStatus: propertyStatus ?? { $ne: PropertyStatus.DELETE },
+    };
+  
+    const sortDirection = input?.direction === Direction.DESC ? -1 : 1;
+    const sortField = input?.sort ?? 'createdAt';
+    const sort: T = { [sortField]: sortDirection };
+  
+    const result = await this.propertyModel
+      .aggregate([
+        { $match: match },
+        { $sort: sort },
+        {
+          $facet: {
+            list: [
+              { $skip: (input.page - 1) * input.limit },
+              { $limit: input.limit },
+              lookupMember,
+              { $unwind: '$memberData' },
+            ],
+            metaCounter: [{ $count: 'total' }],
+          },
+        },
+      ])
+      .exec();
+  
+    if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+  
+    return result[0];
+  }
+  
     
   }
