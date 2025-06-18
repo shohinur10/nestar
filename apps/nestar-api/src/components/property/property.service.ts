@@ -78,38 +78,33 @@ private readonly viewService: ViewService,
       return updatedProperty;
     }
 
-    public async updateProperty(memberId:ObjectId, input:PropertyUpdate):Promise<Property>{
-      let { propertyStatus ,soldAt, deletedAt }= input;
+    public async updateProperty(memberId: ObjectId, input: PropertyUpdate): Promise<Property> {
+      let { propertyStatus, soldAt, deletedAt } = input;
       const search: T = {
-        _id:input._id,
-        memberId:memberId, // bu agent memberId tekshiradi boshqa property update qilolmasligi uchun 
-        propertyStatus: PropertyStatus.ACTIVE
+        _id: input._id,// the property belong to our  agent and the change data
+        memberId: memberId,
+        propertyStatus: PropertyStatus.ACTIVE,
       };
-      console.log('Search query:', search);
-      console.log('Input ID:', input._id.toString());
-      console.log('Auth memberId:', memberId.toString());
-      
+  
       if (propertyStatus === PropertyStatus.SOLD) soldAt = moment().toDate();
       else if (propertyStatus === PropertyStatus.DELETE) deletedAt = moment().toDate();
-    
-
+  
       const result = await this.propertyModel
-      .findOneAndUpdate(search,input,{
-        new: true,
-      })
-      .exec();
-      if (!result) throw new InternalServerErrorException(Message.UPDATED_FAILED);
-
-
-
-      if(soldAt || deletedAt){
-        await this.memberStatsEditor({
-          _Id:memberId,
-          targetKey:"memberProperties",
-          modifier:-1,
+        .findByIdAndUpdate(search, input, {
+          new: true,
         })
+        .exec();
+  
+      if (!result) throw new InternalServerErrorException(Message.UPDATED_FAILED);
+  
+      if (soldAt || deletedAt) {
+        await this.memberService.memberStatsEditor({
+          _id: memberId,
+          targetKey: 'memberProperties',
+          modifier: -1,
+        });
       }
-    return result;
+      return result;
     }
     
   }

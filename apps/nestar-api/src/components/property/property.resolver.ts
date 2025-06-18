@@ -48,19 +48,14 @@ public async getProperty(
 }
 
 @Roles(MemberType.AGENT)
-@UseGuards(RolesGuard)
-@Mutation((returns) => Property)
-public async updateProperty(
-    @Args('input') input: PropertyUpdate,
-    // Ensure this gives correct ID in GraphQL context
-      @AuthMember('_id') memberId: ObjectId
-
-    ): Promise<Property>{
-        console.log('Expected memberId:', memberId);
-
-        console.log('Mutation: PropertyUpdate');
-        input._id =shapeIntoMongoObjectId(input._id)
-        return await this.propertyService.updateProperty(memberId,input,);
-    }
-
+	@UseGuards(RolesGuard)
+	@Mutation((returns) => Property)
+	public async updateProperty(
+		@Args('input') input: PropertyUpdate,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<Property> {
+		console.log('Mutation:updateProperty');
+		input._id = shapeIntoMongoObjectId(input._id);
+		return await this.propertyService.updateProperty(memberId, input);
+	}
 }
