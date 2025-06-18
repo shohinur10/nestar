@@ -23,7 +23,7 @@ export enum Message {
 }
 
 
-export enum Direction{
+export enum Direction {
   ASC = 'ASC',
   DESC = 'DESC',
 }

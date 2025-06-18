@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { isNullableType, NonNullTypeNode } from 'graphql';
 import { Model, ObjectId, Schema, Types } from 'mongoose';
 import { Properties, Property } from '../../libs/dto/property/property';
-import { AgentPropertiesInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
+import { AgentPropertiesInquiry, AllPropertiesInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { MemberService } from '../member/member.service';
 import { PropertyStatus } from '../../libs/enums/property.enum';
@@ -182,6 +182,7 @@ private readonly viewService: ViewService,
       propertyStatus: propertyStatus ?? { $ne: PropertyStatus.DELETE },
     };
   
+
     const sortDirection = input?.direction === Direction.DESC ? -1 : 1;
     const sortField = input?.sort ?? 'createdAt';
     const sort: T = { [sortField]: sortDirection };
@@ -207,7 +208,55 @@ private readonly viewService: ViewService,
     if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
   
     return result[0];
-  }
-  
-    
-  }
+    }
+
+public async getAllPropertiesByAdmin(input: AllPropertiesInquiry): Promise<Properties> {
+  const { propertyStatus, propertyLocationList } = input.search;
+
+  const match: T = {};
+
+  const allowedSorts = [
+    'createdAt',
+    'updateAt',
+    'propertyLikes',
+    'propertyViews',
+    'propertyPrice',
+    'propertyRank',
+  ];
+
+  const sortField = allowedSorts.includes(input.sort ?? '')
+    ? input.sort!
+    : 'createdAt';
+
+  const sortDirection = input.direction === Direction.ASC ? 1 : -1;
+
+  const sort: T = {
+    [sortField]: sortDirection,
+  };
+
+  if (propertyStatus) match.propertyStatus = propertyStatus;
+  if (propertyLocationList) match.propertyLocation = { $in: propertyLocationList };
+
+  const result = await this.propertyModel
+    .aggregate([
+      { $match: match },
+      { $sort: sort },
+      {
+        $facet: {
+          list: [
+            { $skip: (input.page - 1) * input.limit },
+            { $limit: input.limit },
+            lookupMember,
+            { $unwind: '$memberData' },
+          ],
+          metaCounter: [{ $count: 'total' }],
+        },
+      },
+    ])
+    .exec();
+
+  if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+  return result[0];
+}
+}
