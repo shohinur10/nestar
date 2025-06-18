@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { isNullableType, NonNullTypeNode } from 'graphql';
-import { Model, ObjectId, Schema } from 'mongoose';
+import { Model, ObjectId, Schema, Types } from 'mongoose';
 import { Property } from '../../libs/dto/property/property';
 import { PropertyInput } from '../../libs/dto/property/property.input';
 import { Message } from '../../libs/enums/common.enum';
@@ -11,9 +11,12 @@ import { T, StatisticModifier } from '../../libs/types/common';
 import { ViewInput } from '../../libs/dto/view/view.input';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { ViewService } from '../view/view.service';
+import { PropertyUpdate } from '../../libs/dto/property/property.update';
+import moment from 'moment';
 
 @Injectable()
 export class PropertyService {
+  [x: string]: any;
     constructor(
         @InjectModel('Property') private readonly propertyModel: Model<Property>,
 private memberService: MemberService,
@@ -22,31 +25,21 @@ private readonly viewService: ViewService,
 ) {} // Inject the property model
     // This service is responsible for handling property-related operations.
     public async createProperty(input: PropertyInput): Promise<Property> {
-        console.log('Creating property with input:', input);
-      
-        if (!input.memberId) {
-          throw new BadRequestException('memberId is required for property creation');
-        }
-      
-        try {
-          const result = await this.propertyModel.create(input);
-          console.log('Property created:', result);
-      
-          await this.memberService.memberStatsEditor({ // try and catch because validation errors
-            _id: result.memberId,
-            targetKey: 'memberProperties',
-            modifier: 1,
-          });
-          return result;
-        } catch (err) {
-          console.error('Error in createProperty:', err);
-          throw new BadRequestException(Message.CREATE_FAILED);
-        }
+      try {
+        const result = await this.propertyModel.create(input);
+        await this.memberService.memberStatsEditor({ _id: result.memberId, targetKey: 'memberProperties', modifier: 1 });
+        return result;
+      } catch (err) {
+        console.log('Error, Service.model:', err.message);
+        throw new BadRequestException(Message.CREATE_FAILED);
       }
+    }
+  
+    
       public async getProperty(memberId: ObjectId , propertyId:ObjectId): Promise<Property>{
         const search: T ={
           _id:propertyId,
-          //propertyStatus: PropertyStatus.ACTIVE
+          propertyStatus: PropertyStatus.ACTIVE
         };
         const targetProperty = await this.propertyModel.findOne(search).lean().exec();//lean modify
         if (!targetProperty) {
@@ -79,9 +72,44 @@ private readonly viewService: ViewService,
         .exec();
 
       if (!updatedProperty) {
-        throw new InternalServerErrorException('Property not found or update failed');
+        throw new InternalServerErrorException(Message.UPDATED_FAILED);
       }
 
       return updatedProperty;
     }
+
+    public async updateProperty(memberId:ObjectId, input:PropertyUpdate):Promise<Property>{
+      let { propertyStatus ,soldAt, deletedAt }= input;
+      const search: T = {
+        _id:input._id,
+        memberId:memberId, // bu agent memberId tekshiradi boshqa property update qilolmasligi uchun 
+        propertyStatus: PropertyStatus.ACTIVE
+      };
+      console.log('Search query:', search);
+      console.log('Input ID:', input._id.toString());
+      console.log('Auth memberId:', memberId.toString());
+      
+      if (propertyStatus === PropertyStatus.SOLD) soldAt = moment().toDate();
+      else if (propertyStatus === PropertyStatus.DELETE) deletedAt = moment().toDate();
+    
+
+      const result = await this.propertyModel
+      .findOneAndUpdate(search,input,{
+        new: true,
+      })
+      .exec();
+      if (!result) throw new InternalServerErrorException(Message.UPDATED_FAILED);
+
+
+
+      if(soldAt || deletedAt){
+        await this.memberStatsEditor({
+          _Id:memberId,
+          targetKey:"memberProperties",
+          modifier:-1,
+        })
+      }
+    return result;
+    }
+    
   }
