@@ -259,4 +259,40 @@ public async getAllPropertiesByAdmin(input: AllPropertiesInquiry): Promise<Prope
 
   return result[0];
 }
+public async updatePropertyByAdmin(input: PropertyUpdate): Promise<Property> {
+  let { propertyStatus, soldAt, deletedAt } = input;
+  const search: T = {
+    _id: input._id,
+    propertyStatus: PropertyStatus.ACTIVE,
+  };
+
+  if (propertyStatus === PropertyStatus.SOLD) soldAt = moment().toDate();// this for sold status 
+  else if (propertyStatus === PropertyStatus.DELETE) deletedAt = moment().toDate();// this is delete status 
+
+  const result = await this.propertyModel
+    .findOneAndUpdate(search, input, {
+      new: true,
+    })
+    .exec();
+
+  if (!result) throw new InternalServerErrorException(Message.UPDATED_FAILED);
+
+  if (soldAt || deletedAt) {// here we check agent properties total amn if sold or delete will appear ,we are gonna work -1 process and the can see agent properties -1 one total regime 
+    await this.memberService.memberStatsEditor({
+      _id: result.memberId,
+      targetKey: 'memberProperties',
+      modifier: -1,
+    });
+  }
+
+  return result;
+}
+
+// public async removePropertyByAdmin(propertyId: ObjectId): Promise<Property> {
+//   const search: T = { _id: propertyId, propertyStatus: PropertyStatus.DELETE };
+//   const result = await this.propertyModel.findOneAndDelete(search).exec();
+//   if (!result) throw new InternalServerErrorException(Message.REMOVE_FAILED);
+
+//   return result;
+// }
 }
