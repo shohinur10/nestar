@@ -288,11 +288,11 @@ public async updatePropertyByAdmin(input: PropertyUpdate): Promise<Property> {
   return result;
 }
 
-// public async removePropertyByAdmin(propertyId: ObjectId): Promise<Property> {
-//   const search: T = { _id: propertyId, propertyStatus: PropertyStatus.DELETE };
-//   const result = await this.propertyModel.findOneAndDelete(search).exec();
-//   if (!result) throw new InternalServerErrorException(Message.REMOVE_FAILED);
+public async removePropertyByAdmin(propertyId: ObjectId): Promise<Property> {
+  const search: T = { _id: propertyId, propertyStatus: PropertyStatus.DELETE };// this logic only when propertyStatus.delete otherwise no so we cant remove active or sold status 
+  const result = await this.propertyModel.findOneAndDelete(search).exec();
+  if (!result) throw new InternalServerErrorException(Message.REMOVE_FAILED);
 
-//   return result;
-// }
+  return result;
+}
 }
