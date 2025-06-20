@@ -92,41 +92,42 @@ export class BoardArticleService {
 		return result;
 	}
 
-// 	public async getBoardArticles(memberId: ObjectId, input: BoardArticlesInquiry): Promise<BoardArticles> {
-// 		const { articleCategory, text } = input.search;
-// 		const match: T = { articleStatus: BoardArticleStatus.ACTIVE };
-// 		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.DESC };
+	public async getBoardArticles(memberId: ObjectId, input: BoardArticlesInquiry): Promise<BoardArticles> {
+		const { articleCategory, text } = input.search;
+		const match: T = { articleStatus: BoardArticleStatus.ACTIVE };
+		const sort: T = { [input?.sort ?? 'createdAt']: input?.direction ?? Direction.ASC ? 1 : -1,// ✅ convert ASC/DESC to 1/-1
+		};
 
-// 		if (articleCategory) match.articleCategory = articleCategory;
-// 		if (text) match.articleTitle = { $regex: new RegExp(text, 'i') };
-// 		if (input.search?.memberId) {
-// 			match.memberId = shapeIntoMongoObjectId(input.search.memberId);
-// 		}
-// 		console.log('match', match);
+		if (articleCategory) match.articleCategory = articleCategory;
+		if (text) match.articleTitle = { $regex: new RegExp(text, 'i') };
+		if (input.search?.memberId) {
+			match.memberId = shapeIntoMongoObjectId(input.search.memberId);
+		}
+		console.log('match', match);
 
-// 		const result = await this.boardArticleModel
-// 			.aggregate([
-// 				{ $match: match },
-// 				{ $sort: sort },
-// 				{
-// 					$facet: {
-// 						list: [
-// 							{ $skip: (input.page - 1) * input.limit },
-// 							{ $limit: input.limit },
-// 							// meLiked
-// 							//lookupAuthMemberLiked(memberId, '$_id'),
-// 					 	    lookupMember,
-// 							{ $unwind: '$memberData' },
-// 						],
-// 						metaCounter: [{ $count: 'total' }],
-// 					},
-// 				},
-// 			])
-// 			.exec();
-// 		if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+		const result = await this.boardArticleModel
+			.aggregate([
+				{ $match: match },
+				{ $sort: sort },
+				{
+					$facet: {
+						list: [
+							{ $skip: (input.page - 1) * input.limit },
+							{ $limit: input.limit },
+							// meLiked
+							//lookupAuthMemberLiked(memberId, '$_id'),
+					 	    lookupMember,
+							{ $unwind: '$memberData' },
+						],
+						metaCounter: [{ $count: 'total' }],
+					},
+				},
+			])
+			.exec();
+		if (!result.length) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
 
-// 		return result[0];
-// 	}
+		return result[0];
+	}
 public async boardArticleStatsEditor(input: StatisticModifier): Promise<BoardArticle> {
 		const { _id, targetKey, modifier } = input;
 		const updatedArticle = await this.boardArticleModel

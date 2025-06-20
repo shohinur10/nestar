@@ -47,15 +47,15 @@ export class BoardArticleResolver {
 		return await this.boardArticleService.updateBoardArticle(memberId, input);
 	}
 
-	// @UseGuards(WithoutGuard)
-	// @Query((returns) => BoardArticles)
-	// public async getBoardArticles(
-	// 	@Args('input') input: BoardArticlesInquiry,
-	// 	@AuthMember('_id') memberId: ObjectId,
-	// ): Promise<BoardArticles> {
-	// 	console.log('Query: getBoardArticles');
-	// 	return await this.boardArticleService.getBoardArticles(memberId, input);
-	// }
+	@UseGuards(WithoutGuard)
+	@Query((returns) => BoardArticles)
+	public async getBoardArticles(
+		@Args('input') input: BoardArticlesInquiry,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<BoardArticles> {
+		console.log('Query: getBoardArticles');
+		return await this.boardArticleService.getBoardArticles(memberId, input);
+	}
 	
 }
 	// ADMIN
