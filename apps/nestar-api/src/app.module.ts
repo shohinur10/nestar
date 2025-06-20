@@ -13,16 +13,16 @@ import { T } from './libs/types/common';
 // It imports necessary modules, sets up GraphQL with Apollo, and configures global error handling.
 //Design Pattern: Modular Architecture
 @Module({
-  imports: [
+  imports: [ // buninig asosiy matigini rest Api di Graphql Api otkasish 
     ConfigModule.forRoot(),
     GraphQLModule.forRoot({
       driver: ApolloDriver,
       playground: true,
-      uploads: false,
+      uploads: false, // defauld uploads ishga tushirma deyapmiz 
       autoSchemaFile: true,
       formatError: (error: T) => { // formatting GraphQL errors globally
         const graphqlFormatError = {
-          code: error?.extensions.code ,// GraphQL error code
+          code: error?.extensions.code ,// GraphQL error code standard tarziga olib otyapmiz 
           message: 
           error?.extensions?.exception?.response?.message || error?.extensions?.exception?.message || error?.message,
         };
@@ -35,6 +35,6 @@ import { T } from './libs/types/common';
     DatabaseModule,
   ],
   controllers: [AppController],
-  providers: [AppService, AppResolver],
+  providers: [AppService, AppResolver],//ingredients orqali boyitvolyapmiz 
 })
 export class AppModule {}

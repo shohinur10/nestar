@@ -13,6 +13,6 @@ async function bootstrap() { // call qismi
   app.enableCors({origin: true, credentials: true}); // Enable CORS for all routes security 
   app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 })); // Middleware for handling file uploads in GraphQL
   app.use('/uploads',express.static('./uploads')); // Serve static files from the uploads directory
-  await app.listen(process.env.PORT_API ?? 3000);
+  await app.listen(process.env.PORT_API ?? 3000);  // uploads faile ochib beryapiz static qilib tashqi olamga 
 }
 bootstrap(); // bu oddiy function

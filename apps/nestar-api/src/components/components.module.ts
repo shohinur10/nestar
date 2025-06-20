@@ -9,7 +9,7 @@ import { FollowModule } from './follow/follow.module';
 import { BoardArticleModule } from './board-article/board-article.module';
 
 @Module({
-  imports: [
+  imports: [// components modeule asosiy mantigi amalga oshiradi ekan
     MemberModule, 
     AuthModule,
     PropertyModule,
