@@ -1,11 +1,12 @@
 import { Schema } from 'mongoose';
-import { ViewGroup } from '../libs/enums/view.enum';
+import { LikeGroup } from '../libs/enums/like.enum';
+
 
 const LikeSchema = new Schema(
 	{
 		likeGroup: {
 			type: String,
-			enum: ViewGroup,
+			enum: Object.values(LikeGroup),  // Use LikeGroup values here
 			required: true,
 		},
 
@@ -22,7 +23,6 @@ const LikeSchema = new Schema(
 	},
 	{ timestamps: true, collection: 'likes' },
 );
-
 LikeSchema.index({ memberId: 1, likeRefId: 1 }, { unique: true });
 
 export default LikeSchema;

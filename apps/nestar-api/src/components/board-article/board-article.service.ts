@@ -11,6 +11,9 @@ import { ViewGroup } from '../../libs/enums/view.enum';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { MemberService } from '../member/member.service';
 import { ViewService } from '../view/view.service';
+import { LikeGroup } from '../../libs/enums/like.enum';
+import { LikeInput } from '../../libs/dto/like/like.input';
+import { LikeService } from '../like/like.service';
 
 @Injectable()
 export class BoardArticleService {
@@ -18,7 +21,7 @@ export class BoardArticleService {
 		@InjectModel('BoardArticle') private readonly boardArticleModel: Model<BoardArticle>,
 		private readonly memberService: MemberService,
 		private readonly viewService: ViewService,
-		// private readonly likeService: LikeService,
+		private readonly likeService: LikeService
 	) {}
 
 	public async createBoardArticle(memberId: ObjectId, input: BoardArticleInput): Promise<BoardArticle> {
@@ -128,6 +131,42 @@ export class BoardArticleService {
 
 		return result[0];
 	}
+	public async likeTargetBoardArticle(
+		memberId: ObjectId,
+		likeRefId: ObjectId,
+	  ): Promise<BoardArticle> {
+		const target = await this.boardArticleModel.findOne({
+		  _id: likeRefId,
+		  articleStatus: BoardArticleStatus.ACTIVE,
+		}).exec();
+	  
+		if (!target) {
+		  throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+		}
+	  
+		const input: LikeInput = {
+		  memberId: memberId,
+		  likeRefId: likeRefId,
+		  likeGroup: LikeGroup.BOARD_ARTICLE, // ✅ Corrected here
+		};
+	  
+		// Like TOGGLE
+		const modifier: number = await this.likeService.toggleLike(input);
+	  
+		// Update articleLikes count
+		const result = await this.boardArticleStatsEditor({
+		  _id: likeRefId,
+		  targetKey: 'articleLikes', // ✅ Make sure this matches your schema
+		  modifier: modifier,
+		});
+	  
+		if (!result) {
+		  throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
+		}
+	  
+		return result;
+	  }
+	  
 	public async getAllBoardArticlesByAdmin(input: AllBoardArticlesInquiry): Promise<BoardArticles> {
 		const { articleStatus, articleCategory } = input.search;
 		const match: T = {};
