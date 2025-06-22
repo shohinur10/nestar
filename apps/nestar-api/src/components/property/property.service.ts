@@ -159,9 +159,9 @@ private readonly viewService: ViewService,
 		if (locationList && locationList.length) match.propertyLocation = { $in: locationList };// MongoDb syntax
 		if (roomsList && roomsList.length) match.propertyRooms = { $in: roomsList };
 		if (bedsList && bedsList.length) match.propertyBeds = { $in: bedsList };
-		if (typeList && typeList.length) match.propertyType = { $in: typeList };
+		if (typeList && typeList.length) match.propertyType = { $in: typeList };// $in search data that match which is coming from input
 
-		if (pricesRange) match.propertyPrice = { $gte: pricesRange.start, $lte: pricesRange.end };
+		if (pricesRange) match.propertyPrice = { $gte: pricesRange.start, $lte: pricesRange.end };// price should  match that  are requesting  from input and find suitable houses
 		if (periodsRange) match.createdAt = { $gte: periodsRange.start, $lte: periodsRange.end };
 		if (squaresRange) match.propertySquare = { $gte: squaresRange.start, $lte: squaresRange.end };
 
@@ -211,7 +211,7 @@ private readonly viewService: ViewService,
     }
 
 public async getAllPropertiesByAdmin(input: AllPropertiesInquiry): Promise<Properties> {
-  const { propertyStatus, propertyLocationList } = input.search;
+  const { propertyStatus, propertyLocationList } = input.search;//destraction qilyapmiz
 
   const match: T = {};
 
@@ -279,7 +279,7 @@ public async updatePropertyByAdmin(input: PropertyUpdate): Promise<Property> {
 
   if (soldAt || deletedAt) {// here we check agent properties total amn if sold or delete will appear ,we are gonna work -1 process and the can see agent properties -1 one total regime 
     await this.memberService.memberStatsEditor({
-      _id: result.memberId,
+      _id: result.memberId,// dynamac qilib olyapmiz
       targetKey: 'memberProperties',
       modifier: -1,
     });

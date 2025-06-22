@@ -84,7 +84,7 @@ export class CommentService {
 		const match: T = { commentRefId: commentRefId, commentStatus: CommentStatus.ACTIVE };
 		const sort: T = {
             [input?.sort ?? 'createdAt']: input?.direction === Direction.ASC ? 1 : -1,
-          };
+          };// dynamic holatda yasayapmiz key va value
           
 
 		const result = await this.commentModel
@@ -97,7 +97,7 @@ export class CommentService {
 							{ $skip: (input.page - 1) * input.limit },
 							{ $limit: input.limit },
 							// meLikedl
-							lookupMember,
+							lookupMember,//information is about who add the new data 
 							{ $unwind: '$memberData' },
 						],
 						metaCounter: [{ $count: 'total' }],
