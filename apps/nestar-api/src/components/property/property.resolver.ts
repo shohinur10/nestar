@@ -12,6 +12,7 @@ import { MemberType } from '../../libs/enums/member.enum';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { PropertyUpdate } from '../../libs/dto/property/property.update';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { AuthGuard } from '../auth/guards/auth.guard';
 
 @Resolver()
 export class PropertyResolver {
@@ -78,6 +79,21 @@ public async getProperty(
 		console.log('Query: getProperties');
 		return await this.propertyService.getAgentProperties(memberId, input);
 	}
+
+	@UseGuards(AuthGuard)
+	@Mutation(()=>Property)
+	public async likeTargetProperty(
+	  @Args('propertyId') input: string,
+	  @AuthMember('_id') memberId: ObjectId,
+	): Promise<Property>{
+	  console.log('Mutation likeTargetMember ');
+	  const likeRefId = shapeIntoMongoObjectId(input);
+	  return await this.propertyService.likeTargetProperty(memberId, likeRefId);
+	}
+	 
+
+
+
    /** ADMIN */
 
    @Roles(MemberType.ADMIN)
