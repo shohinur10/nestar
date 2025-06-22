@@ -13,11 +13,15 @@ import { ViewService } from '../view/view.service';
 import { ViewInput } from '../../libs/dto/view/view.input';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { exec } from 'child_process';
+import { LikeGroup } from '../../libs/enums/like.enum';
+import { LikeInput } from '../../libs/dto/like/like.input';
+import { LikeService } from '../like/like.service';
 @Injectable()
 export class MemberService {
     constructor(@InjectModel('Member') private readonly memberModel: Model <Member>,
     private authService:AuthService,
-    private viewService: ViewService // Inject ViewService if needed for member-related views
+    private viewService: ViewService,// Inject ViewService if needed for member-related views
+    private likeService:LikeService
 ) {}
 
     public async signup(input:MemberInput): Promise<Member> {
@@ -160,6 +164,28 @@ return result; // Return the Member object directly
         return result[0];
     }
     
+
+    public async likeTargetMember(memberId:ObjectId, likeRefId:ObjectId):Promise<Member>{
+        const target = await this.memberModel.findOne({_id: likeRefId, memberStatus: MemberStatus.ACTIVE}).exec();
+        if (!target) {
+            throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+        }
+       if (!target) throw new InternalServerErrorException(Message.NO_DATA_FOUND);
+
+
+       const  input :LikeInput = {
+        memberId: memberId,
+        likeRefId: likeRefId,
+        likeGroup: LikeGroup.MEMBER
+       };
+
+   // Like TAGGLE
+   const modifier:number = await this.likeService.toggleLike(input);
+   const result = await this.memberStatsEditor({_id:likeRefId, targetKey:'memberLikes', modifier:modifier});
+
+     if (!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
+     return result;
+    }
     
     
     public async getAllMembersByAdmin(input:MembersInquiry): Promise<Members> {
