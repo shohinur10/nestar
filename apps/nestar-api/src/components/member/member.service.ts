@@ -17,9 +17,11 @@ import { LikeGroup } from '../../libs/enums/like.enum';
 import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeService } from '../like/like.service';
 import { MeLiked,Like } from '../../libs/dto/like/like';
+import { Follower, Following, MeFollowed } from '../../libs/dto/follow/follow';
 @Injectable()
 export class MemberService {
     constructor(@InjectModel('Member') private readonly memberModel: Model <Member>,
+    @InjectModel('Follow') private readonly followModel: Model<Follower | Following>,
     private authService:AuthService,
     private viewService: ViewService,// Inject ViewService if needed for member-related views
     private likeService:LikeService
@@ -110,7 +112,7 @@ return result; // Return the Member object directly
 			targetMember.meLiked = await this.likeService.checkLikeExistence(likeInput);
 
 			// meFollowed
-			//targetMember.meFollowed = await this.checkSubscription(memberId, targetId);
+			targetMember.meFollowed = await this.checkSubscription(memberId, targetId);
 		}
 		return targetMember;
 	}
@@ -214,6 +216,13 @@ if (!result.length) {
 }
 return result[0];// [0] – bu yerda 0 indeksi orqali faqatgina birinchi elementni olishimiz mumkin, chunki $facet operatori ikkita massiv qaytaradi: biri ro'yxat (list), ikkinchisi esa metaCounter.
     }
+
+
+    private async checkSubscription(followerId: ObjectId, followingId: ObjectId): Promise<MeFollowed[]> {
+		const result = await this.followModel.findOne({ followerId: followerId, followingId: followingId }).exec();
+		return result ? [{ followerId: followerId, followingId: followingId, myFollowing: true }] : [];
+	}
+
     public async updateMemberByAdmin(input: MemberUpdate): Promise<Member> {
         const { _id, ...updateData } = input;
       
