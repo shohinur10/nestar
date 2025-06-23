@@ -16,7 +16,7 @@ export class FollowService {
 	) {}
 
 	public async subscribe(followerId: ObjectId, followingId: ObjectId): Promise<Follower> {
-		if (followerId.toString() === followingId.toString()) {
+		if (followerId.toString() === followingId.toString()) {// bu yerda object reference solishtilida
 			throw new InternalServerErrorException(Message.SELF_SUBSCRIPTION_DENIED);
 		}
 
