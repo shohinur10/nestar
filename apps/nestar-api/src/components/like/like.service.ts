@@ -14,7 +14,7 @@ export class LikeService {
 	public async toggleLike(input: LikeInput): Promise<number> {
 		const search: T = {
 			memberId: input.memberId,
-			likeRefId: input.likeRefId,
+			likeRefId: input.likeRefId,  // Taggle is th control and manage like that we liked before and like again 
 		};
 
 		const exist = await this.likeModel.findOne(search).exec();

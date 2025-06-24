@@ -5,7 +5,7 @@ import { AllBoardArticlesInquiry, BoardArticleInput, BoardArticlesInquiry } from
 import { BoardArticle, BoardArticles } from '../../libs/dto/board-article/board-article';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { BoardArticleStatus } from '../../libs/enums/board-article.enum';
-import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
+import { lookupAuthMemberLiked, lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
 import { BoardArticleUpdate } from '../../libs/dto/board-article/board-article.update';
 import { ViewGroup } from '../../libs/enums/view.enum';
 import { StatisticModifier, T } from '../../libs/types/common';
@@ -118,7 +118,7 @@ export class BoardArticleService {
 							{ $skip: (input.page - 1) * input.limit },
 							{ $limit: input.limit },
 							// meLiked
-							//lookupAuthMemberLiked(memberId, '$_id'),
+							lookupAuthMemberLiked(memberId),
 					 	    lookupMember,
 							{ $unwind: '$memberData' },
 						],

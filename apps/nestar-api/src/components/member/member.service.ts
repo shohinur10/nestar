@@ -18,6 +18,7 @@ import { LikeInput } from '../../libs/dto/like/like.input';
 import { LikeService } from '../like/like.service';
 import { MeLiked,Like } from '../../libs/dto/like/like';
 import { Follower, Following, MeFollowed } from '../../libs/dto/follow/follow';
+import { lookupAuthMemberLiked } from '../../libs/config';
 @Injectable()
 export class MemberService {
     constructor(@InjectModel('Member') private readonly memberModel: Model <Member>,
@@ -144,7 +145,8 @@ return result; // Return the Member object directly
                 $facet: {
                     list: [
                         { $skip: (input.page - 1) * input.limit },
-                        { $limit: input.limit }
+                        { $limit: input.limit },
+                        lookupAuthMemberLiked(memberId,'$_id'),
                     ],
                     metaCounter: [{ $count: 'total' }],
                 },
