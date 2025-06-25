@@ -81,15 +81,15 @@ public async getProperty(
 		return await this.propertyService.getFavorites(memberId, input);
 	}
 
-	// @UseGuards(AuthGuard)
-	// @Query((returns) => Properties)
-	// public async getVisited(
-	// 	@Args('input') input: OrdinaryInquiry,
-	// 	@AuthMember('_id') memberId: ObjectId,
-	// ): Promise<Properties> {
-	// 	console.log('Query: getVisited');
-	// 	return await this.propertyService.getFavorites(memberId, input);
-	// }
+	@UseGuards(AuthGuard)
+	@Query((returns) => Properties)
+	public async getVisited(
+		@Args('input') input: OrdinaryInquiry,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<Properties> {
+		console.log('Query: getVisited');
+		return await this.propertyService.getFavorites(memberId, input);
+	}
 	
         @Roles(MemberType.AGENT)
 	@UseGuards(RolesGuard)
