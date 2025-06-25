@@ -6,6 +6,9 @@ import { LikeInput } from '../../libs/dto/like/like.input';
 import { T } from '../../libs/types/common';
 import { Message } from '../../libs/enums/common.enum';
 import { Properties } from '../../libs/dto/property/property';
+import { OrdinaryInquiry } from '../../libs/dto/property/property.input';
+import { lookupFavorite } from '../../libs/config';
+import { LikeGroup } from '../../libs/enums/like.enum';
 
 @Injectable()
 export class LikeService {
@@ -41,39 +44,40 @@ export class LikeService {
 		return result ? [{ memberId: memberId, likeRefId: likeRefId, myFavorite: true }] : [];
 	}
 
-// 	public async getFavoriteProperties(memberId: ObjectId, input: OrdinaryInquiry): Promise<Properties> {
-// 		const { page, limit } = input;
-// 		const match: T = { likeGroup: LikeGroup.PROPERTY, memberId: memberId };
-// 		const data: T = await this.likeModel
-// 			.aggregate([
-// 				{ $match: match },
-// 				{ $sort: { updatedAt: -1 } },
-// 				{
-// 					$lookup: {
-// 						from: 'properties',
-// 						localField: 'likeRefId',
-// 						foreignField: '_id',
-// 						as: 'favoriteProperty',
-// 					},
-// 				},
-// 				{ $unwind: '$favoriteProperty' },
-// 				{
-// 					$facet: {
-// 						list: [
-// 							{ $skip: (page - 1) * limit },
-// 							{ $limit: limit },
-// 							lookupFavorite,
-// 							{ $unwind: '$favoriteProperty.memberData' },
-// 						],
-// 						metaCounter: [{ $count: 'total' }],
-// 					},
-// 				},
-// 			])
-// 			.exec();
-// 		console.log('data: ', data);
-// 		const result: Properties = { list: [], metaCounter: data[0].metaCounter };
-// 		result.list = data[0].list.map((ele) => ele.favoriteProperty);
-// 		console.log('result', result);
-// 		return result;
-// 	}
+	public async getFavoriteProperties(memberId: ObjectId, input: OrdinaryInquiry): Promise<Properties> {
+		const { page, limit } = input;
+		const match: T = { likeGroup: LikeGroup.PROPERTY, memberId: memberId };
+		const data: T = await this.likeModel
+			.aggregate([
+				{ $match: match },// like log 
+				{ $sort: { updatedAt: -1 } },// sort by the last like 
+				{
+					$lookup: {
+						from: 'properties',
+						localField: 'likeRefId',
+						foreignField: '_id',
+						as: 'favoriteProperty',
+					},
+				},
+				{ $unwind: '$favoriteProperty' },
+				{
+					$facet: {
+						list: [
+							{ $skip: (page - 1) * limit },
+							{ $limit: limit },
+							lookupFavorite,
+							{ $unwind: '$favoriteProperty.memberData' },
+						],
+						metaCounter: [{ $count: 'total' }],
+					},
+				},
+			])
+			.exec();
+		console.log('data: ', data);
+		const result: Properties = { list: [], metaCounter: data[0].metaCounter };
+		result.list = data[0].list.map((ele) => ele.favoriteProperty);//  log lardi emas biz favorite mantigin berib olyapmiz
+		
+		console.log('result', result);
+		return result;
+	}
 }

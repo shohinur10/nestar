@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { isNullableType, NonNullTypeNode } from 'graphql';
 import { Model, ObjectId, Schema, Types } from 'mongoose';
 import { Properties, Property } from '../../libs/dto/property/property';
-import { AgentPropertiesInquiry, AllPropertiesInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
+import { AgentPropertiesInquiry, AllPropertiesInquiry, OrdinaryInquiry, PropertiesInquiry, PropertyInput } from '../../libs/dto/property/property.input';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { MemberService } from '../member/member.service';
 import { PropertyStatus } from '../../libs/enums/property.enum';
@@ -177,6 +177,13 @@ private readonly likeService: LikeService
 			});
 		}
 	}
+
+  public async getFavorites(memberId: ObjectId, input: OrdinaryInquiry): Promise<Properties> {
+		return await this.likeService.getFavoriteProperties(memberId, input);
+	}
+	// public async getVisited(memberId: ObjectId, input: OrdinaryInquiry): Promise<Properties> {
+	// 	return await this.viewService.getVisitedProperties(memberId, input);
+	// }
 
   public async getAgentProperties(memberId: ObjectId, input: AgentPropertiesInquiry): Promise<Properties> {
     const { propertyStatus } = input.search;
