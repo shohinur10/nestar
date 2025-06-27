@@ -59,7 +59,7 @@ export class LikeService {
 						as: 'favoriteProperty',
 					},
 				},
-				{ $unwind: '$favoriteProperty' },
+				{ $unwind: '$favoriteProperty' },//Array ichida 5 ta favoriteProperty bo‘lsa, $unwind ularni 5 ta alohida hujjatga aylantiradi
 				{
 					$facet: {
 						list: [
@@ -75,8 +75,8 @@ export class LikeService {
 			.exec();
 		console.log('data: ', data);
 		const result: Properties = { list: [], metaCounter: data[0].metaCounter };
-		result.list = data[0].list.map((ele) => ele.favoriteProperty);//  log lardi emas biz favorite mantigin berib olyapmiz
-		
+		result.list = data[0].list.map((ele) => ele.favoriteProperty);//  log lardi emas biz favorite mantigin berib olyapmiz 
+	// map orqali iteration qilamz	
 		console.log('result', result);
 		return result;
 	}

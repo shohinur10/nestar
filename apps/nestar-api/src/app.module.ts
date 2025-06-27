@@ -8,6 +8,7 @@ import { AppResolver } from './app.resolver';
 import { ComponentsModule } from './components/components.module';
 import { DatabaseModule } from './database/database.module';
 import { T } from './libs/types/common';
+import { SocketModule } from './socket/socket.module';
 
 // This is the main application module for the Nestar API service.
 // It imports necessary modules, sets up GraphQL with Apollo, and configures global error handling.
@@ -33,6 +34,7 @@ import { T } from './libs/types/common';
     }),
     ComponentsModule,
     DatabaseModule,
+    SocketModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppResolver],//ingredients orqali boyitvolyapmiz 

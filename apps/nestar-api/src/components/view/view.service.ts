@@ -37,7 +37,7 @@ export class ViewService {
         const match: T = { viewGroup: ViewGroup.PROPERTY, memberId: memberId };
         const data: T = await this.viewModel
           .aggregate([
-            { $match: match },
+            { $match: match },//Filter: faqat kerakli memberId va PROPERTY turidagi yozuvlar olinadi.
             { $sort: { updatedAt: -1 } },// sort by the last view from the top 
             {
               $lookup: {
@@ -49,11 +49,11 @@ export class ViewService {
             },
             { $unwind: '$visitedProperty' },
             {
-              $facet: {
+              $facet: { //Bu bosqichda ikkita paralel natija olinadi:
                 list: [
                   { $skip: (page - 1) * limit },
                   { $limit: limit },
-                  lookupVisit,
+                  lookupVisit,//lookupVisit: bu ehtimol visitedProperty ichidagi boshqa bog‘liq ma’lumotlarni olish uchun ishlatiladi (masalan: agent, user, va h.k.).
                   { $unwind: '$visitedProperty.memberData' },
                 ],
                 metaCounter: [{ $count: 'total' }],
