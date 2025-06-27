@@ -28,7 +28,7 @@ export class BatchService {
 			})
 			.exec();
 
-		const promisedList = properties.map(async (ele: Property) => {
+		const promisedList = properties.map(async (ele: Property) => { // botta map orqali iteration qilyapmiz 
 			const { _id, propertyLikes, propertyViews } = ele;
 			const rank = propertyLikes * 2 + propertyViews * 1;
 			return await this.propertyModel.findByIdAndUpdate(_id, { propertyRank: rank });
@@ -36,24 +36,46 @@ export class BatchService {
 		await Promise.all(promisedList);
 	}
 
-	public async batchTopAgents(): Promise<void> {
-		const agents: Member[] = await this.memberModel
-			.find({
-				memberType: MemberType.AGENT,
-				memberStatus: MemberStatus.ACTIVE,
-				memberRank: 0,
-			})
-			.exec();
-
-		const promisedList = agents.map(async (ele: Member) => {
-			const { _id, memberProperties, memberArticles, memberLikes, memberViews } = ele;
-			const rank = memberProperties * 5 + memberArticles * 3 + memberLikes * 2 + memberViews * 1;
-			return await this.memberModel.findByIdAndUpdate(_id, { memberRank: rank });
-		});
-		await Promise.all(promisedList);
-	}
-
-	public getHello(): string {
+  public async batchTopAgents(): Promise<void> {
+    const agents: Member[] = await this.memberModel
+      .find({
+        memberType: MemberType.AGENT,
+        memberStatus: MemberStatus.ACTIVE,
+        memberRank: 0,
+      })
+      .exec();
+  
+    const promisedList = agents.map(async (ele: Member) => {
+      const {
+        _id,
+        memberProperties = 0,
+        memberArticles = 0,
+        memberLikes = 0,
+        memberViews = 0,
+      } = ele;
+  
+      const rank =
+        (memberProperties || 0) * 5 +
+        (memberArticles || 0) * 3 +
+        (memberLikes || 0) * 2 +
+        (memberViews || 0) * 1;
+  
+      // Log for debugging
+      console.log('Calculated rank for agent:', {
+        id: _id,
+        memberProperties,
+        memberArticles,
+        memberLikes,
+        memberViews,
+        rank,
+      });
+  
+      return await this.memberModel.findByIdAndUpdate(_id, { memberRank: rank });
+    });
+  
+    await Promise.all(promisedList);
+  }  
+  public getHello(): string {
 		return 'Welcome to Nestar BATCH Server!';
 	}
 }
